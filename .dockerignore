@@ -4,8 +4,9 @@ __pycache__/
 venv/
 data/
 *.db
-*.sqlite3
-.env
-.idea/
-.vscode/
+*.pdf
+.git/
 .claude/
+docs/
+README.md
+CLAUDE.md
