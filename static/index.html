@@ -1,0 +1,224 @@
+<!doctype html>
+<!--
+  RF08 - Interface de usuário.
+  HTML, CSS e JavaScript puro, sem framework (RNF07), servida pelo próprio
+  backend em http://localhost:8000 (RNF03).
+-->
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Controle de Gastos Pessoais</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <h1>Controle de Gastos Pessoais</h1>
+      <a class="link-docs" href="/docs" target="_blank" rel="noopener">API /docs</a>
+    </header>
+
+    <!-- mensagem global de erro/sucesso -->
+    <div id="aviso" class="aviso" role="alert" hidden></div>
+
+    <nav class="abas">
+      <button class="aba ativa" data-aba="lancamentos">Lançamentos</button>
+      <button class="aba" data-aba="categorias">Categorias</button>
+    </nav>
+
+    <!-- ============ ABA LANÇAMENTOS ============ -->
+    <main id="painel-lancamentos">
+      <!-- RF06 / RF07 -->
+      <section class="cartoes">
+        <article class="cartao receitas">
+          <span class="rotulo">Receitas do período</span>
+          <strong id="total-receitas" class="valor receita">R$ 0,00</strong>
+        </article>
+        <article class="cartao despesas">
+          <span class="rotulo">Despesas do período</span>
+          <strong id="total-despesas" class="valor despesa">R$ 0,00</strong>
+        </article>
+        <article class="cartao">
+          <span class="rotulo">Saldo do período</span>
+          <strong id="saldo-periodo" class="valor">R$ 0,00</strong>
+        </article>
+        <article class="cartao destaque">
+          <span class="rotulo">Saldo atual (total)</span>
+          <strong id="saldo-atual" class="valor">R$ 0,00</strong>
+        </article>
+      </section>
+
+      <!--
+        Onde o dinheiro foi. Barra horizontal ordenada por magnitude, em hue única
+        (sequencial): a identidade fica no rótulo de cada linha, nunca só na cor.
+      -->
+      <section class="painel">
+        <h2>
+          Despesas por categoria
+          <span class="sub" id="grafico-periodo"></span>
+        </h2>
+        <div id="grafico" class="grafico"></div>
+        <p id="grafico-vazio" class="vazio" hidden>Sem despesas no período filtrado.</p>
+      </section>
+
+      <div class="colunas">
+        <!-- RF01 - cadastro / edição -->
+        <section class="painel">
+          <h2 id="titulo-form">Nova movimentação</h2>
+          <form id="form-transacao" class="formulario">
+            <input type="hidden" id="transacao-id" />
+
+            <div class="campo">
+              <label for="tipo">Tipo</label>
+              <select id="tipo" required>
+                <option value="despesa">Despesa</option>
+                <option value="receita">Receita</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label for="valor">Valor (R$)</label>
+              <!-- RN02: valor estritamente maior que zero -->
+              <input type="number" id="valor" step="0.01" min="0.01" required />
+            </div>
+
+            <div class="campo">
+              <!-- RN03: input date já entrega YYYY-MM-DD e recusa data inexistente -->
+              <label for="data">Data</label>
+              <input type="date" id="data" required />
+            </div>
+
+            <div class="campo">
+              <label for="categoria">Categoria</label>
+              <select id="categoria" required></select>
+            </div>
+
+            <div class="campo">
+              <label for="descricao">Descrição <span class="opcional">(opcional)</span></label>
+              <input type="text" id="descricao" maxlength="255" />
+            </div>
+
+            <div class="acoes-form">
+              <button type="submit" class="botao primario" id="botao-salvar">Cadastrar</button>
+              <button type="button" class="botao" id="botao-cancelar" hidden>Cancelar edição</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- RF03 / RF05 -->
+        <section class="painel">
+          <h2>Movimentações</h2>
+
+          <form id="form-filtros" class="filtros">
+            <div class="campo">
+              <label for="filtro-mes">Mês</label>
+              <select id="filtro-mes">
+                <option value="">Todos</option>
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+              </select>
+            </div>
+
+            <div class="campo">
+              <label for="filtro-ano">Ano</label>
+              <input type="number" id="filtro-ano" min="1900" max="2999" placeholder="Todos" />
+            </div>
+
+            <div class="campo">
+              <label for="filtro-categoria">Categoria</label>
+              <select id="filtro-categoria">
+                <option value="">Todas</option>
+              </select>
+            </div>
+
+            <div class="acoes-filtro">
+              <button type="submit" class="botao primario">Filtrar</button>
+              <button type="button" class="botao" id="botao-limpar">Limpar</button>
+              <!-- RF09 -->
+              <button type="button" class="botao" id="botao-exportar">Exportar CSV</button>
+            </div>
+          </form>
+
+          <div class="tabela-rolagem">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Categoria</th>
+                  <th>Descrição</th>
+                  <th class="direita">Valor</th>
+                  <th class="direita">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-transacoes"></tbody>
+            </table>
+          </div>
+
+          <p id="vazio-transacoes" class="vazio" hidden>Nenhuma movimentação encontrada.</p>
+
+          <!-- Ajuste 2 da SDD: paginação limit/offset -->
+          <div class="paginacao">
+            <button type="button" class="botao" id="pagina-anterior">Anterior</button>
+            <span id="pagina-info">Página 1</span>
+            <button type="button" class="botao" id="pagina-proxima">Próxima</button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- ============ ABA CATEGORIAS (RF02) ============ -->
+    <main id="painel-categorias" hidden>
+      <div class="colunas">
+        <section class="painel">
+          <h2 id="titulo-form-categoria">Nova categoria</h2>
+          <form id="form-categoria" class="formulario">
+            <input type="hidden" id="categoria-id" />
+            <div class="campo">
+              <label for="nome-categoria">Nome</label>
+              <input type="text" id="nome-categoria" maxlength="80" required />
+            </div>
+            <div class="acoes-form">
+              <button type="submit" class="botao primario" id="botao-salvar-categoria">
+                Cadastrar
+              </button>
+              <button type="button" class="botao" id="botao-cancelar-categoria" hidden>
+                Cancelar edição
+              </button>
+            </div>
+          </form>
+          <p class="dica">
+            Categorias vinculadas a movimentações não podem ser excluídas (RN05). Exclua ou
+            altere as movimentações primeiro.
+          </p>
+        </section>
+
+        <section class="painel">
+          <h2>Categorias cadastradas</h2>
+          <div class="tabela-rolagem">
+            <table class="tabela">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nome</th>
+                  <th class="direita">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-categorias"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
