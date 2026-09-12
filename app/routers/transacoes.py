@@ -70,7 +70,7 @@ def listar_transacoes(
 
 
 # precisa vir antes de /{transacao_id}, senao o path param captura "exportar"
-@router.get("/exportar", tags=["Resumos e Exportação"])
+@router.get("/exportar")
 def exportar_transacoes(
     db: Session = Depends(get_db),
     mes: int | None = Query(default=None, ge=1, le=12),
