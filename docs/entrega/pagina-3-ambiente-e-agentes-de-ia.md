@@ -244,6 +244,6 @@ docker compose run --rm api pytest -v --cov=app    # com relatório de cobertura
 pytest -v                                          # localmente, na venv
 ```
 
-> **Situação atual:** a suíte automatizada com Pytest é a **issue #5** e ainda não está no
-> repositório. A validação já realizada foi feita por execução manual dos endpoints, com todas as
-> saídas registradas em `docs/evidencias.md`.
+> **Atualização (20/10/2026):** a suíte Pytest (issue #5) entrou pelo PR #11 em `tests/test_api.py`.
+> Comando atual e limitação conhecida na seção "Testes automatizados" do `README.md` e no ADR-10
+> de `docs/adr.md`.

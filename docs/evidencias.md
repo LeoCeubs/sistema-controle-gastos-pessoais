@@ -337,6 +337,9 @@ Pytest exigida pelo RNF05 ainda não existe no repositório** — ela é a issue
 responsabilidade de outro integrante. O ambiente já está preparado para recebê-la, e os cenários
 documentados nas seções 3 e 4 servem diretamente como roteiro dos casos de teste a implementar.
 
+> **Atualização (20/10/2026):** a suíte Pytest entrou pelo PR #11 (`tests/test_api.py`). Ver
+> seção "Testes automatizados" do `README.md` e ADR-10 em `docs/adr.md`.
+
 ---
 
 ## Como reproduzir esta verificação
