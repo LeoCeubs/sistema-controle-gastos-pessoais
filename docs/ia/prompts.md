@@ -236,6 +236,27 @@ estouro horizontal.
 
 ---
 
+## Sessão 4 — 20/10/2026 — README final, ADRs e relato (Entrega 2, item 3)
+
+### Prompt
+
+> "Leia a parte 2 da entrega do bootcamp [...] a minha parte é a 3: Comunicação Técnica, Defesa de
+> Projeto & README Final. Leia relatório parte 1 e entrega intermediária e faça a parte 3."
+
+**Resultado:** README ganhou seção de arquitetura com diagrama de componentes e diagrama de
+sequência (Mermaid), seção de testes e resumo dos ADRs; criados `docs/adr.md` (ADR-01 a ADR-10 com
+contexto, alternativas e trade-offs) e `docs/entrega/parte-3-comunicacao-tecnica.md` (texto da
+seção 3 do relatório). Commits de documentação que estavam fora da `develop` foram reaplicados.
+
+**Ajuste / achados:** ao rodar a suíte num banco limpo, 3 de 4 testes falharam
+(`no such table: categorias`): o `TestClient` sem `with` não executa o `init_db`. Com o banco já
+inicializado, 4 de 4 passam. Também foi confirmado que o `lower()` do SQLite não trata acentos
+maiúsculos (`"ALIMENTAÇÃO"` passa como categoria nova, contra a RN04). Os dois ficaram registrados
+como dívida em `docs/adr.md`, sem correção, por pertencerem a outras frentes. O ADR do FastAPI do
+relatório preliminar ("alta performance assíncrona") foi corrigido: os endpoints são síncronos.
+
+---
+
 ## Sessões futuras
 
 Adicionar aqui cada uso relevante do agente, mantendo o formato **Prompt → Resultado → Ajuste**.
