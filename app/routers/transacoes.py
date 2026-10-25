@@ -97,7 +97,7 @@ def exportar_transacoes(
         )
 
     # BOM para o Excel abrir acentuacao corretamente
-    conteudo = "﻿" + buffer.getvalue()
+    conteudo = "\ufeff" + buffer.getvalue()
     return Response(
         content=conteudo,
         media_type="text/csv; charset=utf-8",
