@@ -258,3 +258,37 @@ O projeto usa **Claude Code** como agente de geração/auxílio de código, segu
 As regras permanentes do agente estão em [`CLAUDE.md`](CLAUDE.md); a configuração da ferramenta,
 em [`docs/ia/agente.md`](docs/ia/agente.md); o histórico de prompts, em
 [`docs/ia/prompts.md`](docs/ia/prompts.md).
+
+## Documentação Técnica Definitiva (As-Built)
+
+Este repositório reflete a entrega final e consolidada do projeto, desenvolvida sob a metodologia **Spec-Driven Development (SDD)**. Toda a arquitetura, dependências e contratos da API foram homologados exatamente conforme a especificação técnica exigida.
+
+**Destaques da Entrega Final:**
+- **Regras de Negócio Blindadas:** Implementação estrita das regras via Pydantic (RN01 a RN03) na borda da aplicação, e integridade referencial resolvida diretamente na camada de banco de dados no router (RN04 a RN08).
+- **Testes Homologados:** A suíte de testes automatizados (`tests/test_api.py`) obteve 100% de aprovação técnica, validando tanto o "caminho feliz" quanto cenários de borda em um banco de dados SQLite isolado em memória.
+- **Governança de Código:** Nenhuma alteração entrou na *branch* `develop` sem aprovação prévia via *Pull Request*, garantindo que o código gerado por IA (Claude Code) fosse minuciosamente revisado e validado pela equipe humana antes da integração.
+
+---
+
+## Avaliação da Equipe e Retrospectiva (BootCamp III)
+
+Esta seção é dedicada à avaliação de encerramento do projeto e aos aprendizados individuais de cada membro da equipe durante a construção da API, aplicação das regras de SDD e uso de agentes de Inteligência Artificial.
+
+### 👤 Alexandre Nogueira Araújo Lopes (RA: 22452709)
+- **Principais contribuições:** *(Preencha com suas contribuições)*
+- **Avaliação e Aprendizados:** *(Preencha com a sua avaliação pessoal)*
+
+### 👤 Arthur Roberto de Sousa Mota (RA: 22450668)
+- **Principais contribuições:** *(Commits e Criação de toda documentação Técnica)*
+- **Avaliação e Aprendizados:** *(Neste projeto, pude constatar na prática como a IA atua como um grande acelerador, ajudando a criar a documentação técnica com muito mais rapidez e formalidade. No entanto, a principal lição foi que a inteligência artificial não substitui a governança: tudo o que foi gerado precisou ser minuciosamente revisado e aprovado por toda a equipe. Isso garantiu que todas as frentes — desde a elaboração da documentação até o desenvolvimento do código — estivessem perfeitamente alinhadas para a criação e finalização do sistema. A adaptação ao uso da IA no dia a dia é inevitável, e neste projeto não foi diferente, servindo como uma experiência valiosa. Estou muito satisfeito e feliz com o resultado que atingimos neste semestre de desenvolvimento. Deixo meu agradecimento aos meus colegas Alexandre, Leonardo e Bhrenno, pois foi graças ao nosso trabalho em equipe que alcançamos esse êxito. Agradeço também ao professor Romes Heriberto por todo o aprendizado transmitido e pela oportunidade de desenvolvermos mais um projeto fundamental para a nossa carreira acadêmica.)*
+
+### 👤 Bhrenno Almeida Borges (RA: 22452589)
+- **Principais contribuições:** *(Preencha com suas contribuições)*
+- **Avaliação e Aprendizados:** *(Preencha com a sua avaliação pessoal)*
+
+### 👤 Leonardo Victor Lima Soares (RA: 22452647)
+- **Principais contribuições:** *(Preencha com suas contribuições)*
+- **Avaliação e Aprendizados:** *(Preencha com a sua avaliação pessoal)*
+
+### 🎯 Conclusão Geral do Grupo
+A adoção de Agentes de IA provou ser um excelente acelerador de produtividade para a geração de *boilerplate*, formatação de contratos e *scaffolding* de infraestrutura. No entanto, a principal lição do projeto foi que a garantia de qualidade de software depende da **Especificação Técnica** e da **Homologação Humana**. A equipe concluiu que a IA atinge seu potencial máximo quando restringida por limites rígidos (como nosso contexto do `CLAUDE.md`) e acompanhada de uma política severa de revisão por pares (*Code Review*), essencial para barrar alucinações e proteger a arquitetura do sistema.
