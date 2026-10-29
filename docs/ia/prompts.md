@@ -257,6 +257,26 @@ relatório preliminar ("alta performance assíncrona") foi corrigido: os endpoin
 
 ---
 
+## Sessão 5 — 29/10/2026 — Empacotamento e guia de execução (Entrega 3, item 3)
+
+### Prompt
+
+> "[enunciado da Entrega 3 colado] faça apenas o passo 3"
+
+**Resultado:** `tests/conftest.py` isola a suíte num SQLite temporário e cria as tabelas antes dos
+testes; `docker-compose.yml` passou a ler `PORTA` e `DATABASE_URL` (com padrões) e a montar
+`tests/`; criado `.env.example`; README reescrito do pré-requisito aos testes (guia rápido,
+variáveis de ambiente, subir, testar, operação, execução sem Docker, problemas comuns); ADR-10
+atualizado.
+
+**Ajuste / achados:** validado num projeto Compose separado (`-p gastos-verif`), simulando clone
+novo: `docker compose run --rm --build api python -m pytest -v` deu 9 passed em banco limpo, e
+`PORTA=8010` subiu a aplicação na porta trocada. O comando antigo com `pytest` direto falhava no
+container com `ModuleNotFoundError: No module named 'app'`; o guia usa `python -m pytest`. Os testes
+rodados com a aplicação no ar não alteraram as categorias do banco real.
+
+---
+
 ## Sessões futuras
 
 Adicionar aqui cada uso relevante do agente, mantendo o formato **Prompt → Resultado → Ajuste**.

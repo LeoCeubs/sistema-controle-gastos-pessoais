@@ -140,10 +140,15 @@ A revisão humana continua obrigatória: o contexto reduz o desvio, não o elimi
 dentro do container (`pytest` e `httpx` adicionados ao `requirements.txt`).
 
 **Trade-offs.** Testes curtos, que exercitam o caminho HTTP completo, handlers de erro incluídos.
-Em troca, a suíte usa o mesmo banco da aplicação: grava dados nele e depende de as tabelas já
-existirem. Como o `TestClient` é criado sem bloco `with`, o evento de inicialização (`init_db`) não
-roda durante os testes; em banco recém-criado, três dos quatro testes falham com
-`no such table: categorias`. Com a API já iniciada uma vez, os quatro passam.
+A primeira versão usava o mesmo banco da aplicação: gravava dados nele e só passava se as tabelas já
+existissem, porque o `TestClient` criado sem `with` não executa o `init_db`. Em banco limpo, a
+maioria dos testes falhava com `no such table: categorias`.
+
+**Revisão (29/10/2026, Entrega 3).** `tests/conftest.py` aponta `DATABASE_URL` para um SQLite
+temporário antes de importar a aplicação e chama `init_db()` uma vez por sessão. A suíte passa a
+rodar com um comando (`docker compose run --rm --build api python -m pytest -v`), em banco limpo, sem
+tocar nos dados do usuário. Custo: os testes de uma mesma execução compartilham esse banco, então a
+ordem entre eles ainda pode importar.
 
 ---
 
@@ -154,6 +159,6 @@ correção nesta branch.
 
 | Item | Efeito | Correção sugerida |
 |---|---|---|
-| Testes sem isolamento de banco (ADR-10) | Suíte falha em banco novo e polui o banco real | `with TestClient(app) as client:` ou fixture com `DATABASE_URL` temporário |
+| ~~Testes sem isolamento de banco (ADR-10)~~ | Resolvido em 29/10/2026 por `tests/conftest.py` | — |
 | `lower()` do SQLite só trata ASCII (ADR-02) | `"ALIMENTAÇÃO"` é aceita como categoria diferente de `"Alimentação"`, violando RN04 | Comparar com `str.casefold()` em Python ou guardar coluna de nome normalizado |
 | `main` ainda no commit inicial | Versão estável não reflete o projeto entregue | PR `develop` → `main` ao fechar a entrega |
