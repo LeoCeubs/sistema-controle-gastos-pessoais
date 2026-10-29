@@ -84,56 +84,114 @@ sequenceDiagram
 
 ## Pré-requisitos
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) com Docker Compose v2
-- (alternativa sem Docker) Python 3.11 ou superior
+- [Git](https://git-scm.com/downloads)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) com Docker Compose v2.13 ou
+  superior, **aberto e em execução** (ícone da baleia ativo)
+- Alternativa sem Docker: Python 3.11, 3.12 ou 3.13
 
-## Como executar
-
-### Com Docker (recomendado)
+## Guia rápido
 
 ```bash
-docker compose up --build
+git clone https://github.com/LeoCeubs/sistema-controle-gastos-pessoais.git
+cd sistema-controle-gastos-pessoais
+
+docker compose up --build -d                              # aplicação em http://localhost:8000
+docker compose run --rm --build api python -m pytest -v   # suíte de testes
 ```
 
-Pronto. A aplicação sobe em **http://localhost:8000**:
+## Passo a passo
+
+### 1. Configurar variáveis de ambiente (opcional)
+
+Os valores padrão já funcionam; este passo só é necessário para mudar algo.
+
+```bash
+cp .env.example .env        # Windows (PowerShell): Copy-Item .env.example .env
+```
+
+Edite o `.env`. O Docker Compose o lê automaticamente.
+
+| Variável | Padrão | Para que serve |
+|---|---|---|
+| `PORTA` | `8000` | Porta do **host** onde a aplicação fica acessível. Use outra se a 8000 estiver ocupada (ex.: `PORTA=8080` → http://localhost:8080). Dentro do container a API continua na 8000 (RNF03). |
+| `DATABASE_URL` | `sqlite:////app/data/app.db` | Arquivo do banco SQLite. No Docker, mantenha dentro de `/app/data`, que é o volume `dados`; fora dele os dados somem ao recriar o container. |
+
+O `.env` está no `.gitignore` e não vai para o repositório.
+
+### 2. Subir a aplicação
+
+```bash
+docker compose up --build -d
+```
+
+O primeiro build baixa a imagem do Python e as dependências (cerca de 1 minuto). Depois:
 
 | Endereço | O que é |
 |---|---|
 | http://localhost:8000 | Interface web |
 | http://localhost:8000/docs | Documentação interativa da API (Swagger) |
-| http://localhost:8000/health | Status do serviço |
+| http://localhost:8000/health | Status do serviço: deve responder `{"status":"ok"}` |
 
-Parar: `docker compose down` — os dados **permanecem**, guardados no volume `dados`.
-Para apagar o banco junto: `docker compose down -v`.
+Na primeira execução o banco é criado com as categorias **Alimentação**, **Salário** e
+**Outros** (RN06).
 
-### Sem Docker
+### 3. Rodar os testes automatizados
+
+```bash
+docker compose run --rm --build api python -m pytest -v
+```
+
+Um comando, com ou sem a aplicação no ar. A suíte (`tests/test_api.py`, Pytest + `TestClient`
+do FastAPI, RNF05) roda num **banco SQLite temporário e isolado**, criado do zero a cada
+execução por `tests/conftest.py`: não depende de estado anterior e **não altera os dados do
+usuário**. Resultado esperado: `9 passed`.
+
+Com a aplicação já no ar, também funciona: `docker compose exec api python -m pytest -v`.
+
+> Use `python -m pytest`, e não `pytest` direto: o `python -m` coloca a raiz do projeto no
+> caminho de importação, e sem isso os testes não encontram o pacote `app`.
+
+### 4. Operação do dia a dia
+
+| Ação | Comando |
+|---|---|
+| Ver logs | `docker compose logs -f api` |
+| Parar (dados **permanecem** no volume `dados`) | `docker compose down` |
+| Parar e **apagar o banco** | `docker compose down -v` |
+| Recriar após mudar `requirements.txt` ou `Dockerfile` | `docker compose up --build -d` |
+
+Em desenvolvimento, `app/`, `static/` e `tests/` são montados no container e o servidor recarrega
+sozinho ao salvar um arquivo; não é preciso rebuild para mudanças de código.
+
+### Execução sem Docker
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # Linux / macOS
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # Linux / macOS
 
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload   # aplicação em http://localhost:8000
+python -m pytest -v             # testes
 ```
 
-O banco é criado em `./data/app.db` na primeira execução, junto com as categorias padrão.
-
-## Testes automatizados
-
-Suíte Pytest + `TestClient` do FastAPI em `tests/test_api.py` (RNF05), cobrindo cenário normal e
-casos de borda (RN02, RN04, saldo/resumo).
+Sem Docker o banco fica em `./data/app.db`. Para usar outro arquivo, defina `DATABASE_URL` no
+shell antes de subir (o `.env` só é lido pelo Docker Compose):
 
 ```bash
-docker compose up -d --build           # sobe a API e cria o banco
-docker compose exec api pytest -v      # roda a suíte dentro do container
+set DATABASE_URL=sqlite:///./outro.db              # Windows (cmd)
+$env:DATABASE_URL="sqlite:///./outro.db"           # Windows (PowerShell)
+export DATABASE_URL=sqlite:///./outro.db           # Linux / macOS
 ```
 
-Sem Docker, com a venv ativa: `pytest -v`.
+### Problemas comuns
 
-> **Atenção:** os testes usam o mesmo banco da aplicação e dependem de as tabelas já existirem.
-> Por isso o comando acima sobe a API antes. Em banco recém-criado, sem a API ter iniciado, os
-> testes falham com `no such table: categorias` (detalhe em [`docs/adr.md`](docs/adr.md), ADR-10).
+| Sintoma | Causa e solução |
+|---|---|
+| `error during connect ... dockerDesktopLinuxEngine` | Docker Desktop fechado. Abra-o e espere o ícone ficar estável. |
+| `port is already allocated` / `Bind for 0.0.0.0:8000 failed` | Porta 8000 ocupada. Defina `PORTA=8080` no `.env` (passo 1). |
+| `ModuleNotFoundError: No module named 'app'` nos testes | Rodou `pytest` direto; use `python -m pytest`. |
+| `unknown flag: --build` no `docker compose run` | Compose anterior à v2.13. Rode `docker compose build` antes e tire o `--build`. |
 
 ## Interface web
 
@@ -216,12 +274,14 @@ Erros seguem sempre o mesmo formato, com status HTTP semântico:
 │   ├── style.css            # estilos
 │   └── app.js               # consumo da API, filtros, paginação, exportação
 ├── tests/
+│   ├── conftest.py          # banco temporário isolado para a suíte
 │   └── test_api.py          # suíte Pytest (RNF05)
 ├── docs/
 │   ├── adr.md               # registro consolidado de decisões de arquitetura
 │   ├── evidencias.md        # saídas reais da validação manual dos endpoints
 │   ├── entrega/             # textos das seções do relatório de entrega
 │   └── ia/                  # configuração do agente de IA e registro de prompts
+├── .env.example             # variáveis de ambiente configuráveis
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
@@ -243,7 +303,7 @@ Resumo abaixo; contexto, alternativas e trade-offs de cada decisão em [`docs/ad
 | 07 | Validação de campo no schema, regra de banco no router | Duas camadas de validação para conhecer |
 | 08 | Git flow `main`/`develop`/`feature/*` com PR e revisão obrigatória | Mais lento que push direto; nada entra sem par |
 | 09 | Agente de IA governado por `CLAUDE.md` e fluxo SDD | Configuração inicial e prompts mais longos |
-| 10 | Testes com `TestClient` sobre o banco da aplicação | Simples de escrever; testes não isolados (ver dívida registrada) |
+| 10 | Testes com `TestClient` em banco SQLite temporário | Caminho HTTP completo e isolado; banco recriado a cada execução |
 
 ## Evidências de execução
 
@@ -265,7 +325,7 @@ Este repositório reflete a entrega final e consolidada do projeto, desenvolvida
 
 **Destaques da Entrega Final:**
 - **Regras de Negócio Blindadas:** Implementação estrita das regras via Pydantic (RN01 a RN03) na borda da aplicação, e integridade referencial resolvida diretamente na camada de banco de dados no router (RN04 a RN08).
-- **Testes Homologados:** A suíte de testes automatizados (`tests/test_api.py`) obteve 100% de aprovação técnica, validando tanto o "caminho feliz" quanto cenários de borda em um banco de dados SQLite isolado em memória.
+- **Testes Homologados:** A suíte de testes automatizados (`tests/test_api.py`) obteve 100% de aprovação técnica, validando tanto o "caminho feliz" quanto cenários de borda em um banco de dados SQLite temporário e isolado, criado a cada execução (`tests/conftest.py`).
 - **Governança de Código:** Nenhuma alteração entrou na *branch* `develop` sem aprovação prévia via *Pull Request*, garantindo que o código gerado por IA (Claude Code) fosse minuciosamente revisado e validado pela equipe humana antes da integração.
 
 ---

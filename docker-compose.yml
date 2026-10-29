@@ -3,15 +3,17 @@ services:
     build: .
     container_name: gastos-api
     ports:
-      - "8000:8000"
+      # RNF03: a API escuta sempre em 8000 no container; PORTA muda so o lado do host
+      - "${PORTA:-8000}:8000"
     environment:
-      DATABASE_URL: sqlite:////app/data/app.db
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/data/app.db}
     volumes:
       # RNF02: banco SQLite em volume nomeado, sobrevive a recriacao do container
       - dados:/app/data
       # desenvolvimento: codigo do host refletido no container
       - ./app:/app/app
       - ./static:/app/static
+      - ./tests:/app/tests
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 volumes:
