@@ -88,6 +88,15 @@ def test_caso_de_borda_categoria_duplicada():
     assert "já cadastrada" in mensagem.lower()
 
 
+def test_caso_de_borda_categoria_duplicada_com_acento_maiusculo():
+    """Caso de borda: RN04 vale também para nome gravado com acento maiúsculo (Ç, Ã)."""
+    client.post("/categorias", json={"nome": "MANUTENÇÃO"})
+
+    response = client.post("/categorias", json={"nome": "Manutenção"})
+    assert response.status_code == 400
+    assert response.json() == {"erro": "Categoria já cadastrada."}
+
+
 def test_caso_de_borda_transacao_valor_invalido():
     """Caso de borda: Tentar cadastrar transação com valor menor ou igual a zero (RN02)."""
     payload_invalido = {
