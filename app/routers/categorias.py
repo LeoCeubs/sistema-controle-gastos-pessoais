@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -11,10 +11,13 @@ router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
 def _nome_ja_existe(db: Session, nome: str, ignorar_id: int | None = None) -> bool:
     """RN04: unicidade de nome ignorando maiusculas/minusculas."""
-    stmt = select(Categoria.id).where(func.lower(Categoria.nome) == nome.lower())
+    # compara em Python: o lower() do SQLite so converte ASCII ("Ç" != "ç").
+    # ponytail: varre todas as categorias; trocar por coluna normalizada se passarem de milhares
+    stmt = select(Categoria.nome)
     if ignorar_id is not None:
         stmt = stmt.where(Categoria.id != ignorar_id)
-    return db.execute(stmt).first() is not None
+    alvo = nome.casefold()
+    return any(existente.casefold() == alvo for existente in db.scalars(stmt))
 
 
 def _buscar(db: Session, categoria_id: int) -> Categoria:

@@ -38,8 +38,8 @@ nem integridade referencial (RN05).
 
 **Trade-offs.** Zero servidor para instalar e backup por cópia de arquivo. Em troca, SQLite
 serializa escritas, o que limita uso concorrente (irrelevante aqui), e suas funções de texto são
-limitadas: `lower()` só converte ASCII, o que afeta a comparação de nomes com acento (ver
-"Dívidas registradas"). O ORM mantém aberta a troca de banco sem reescrever consultas.
+limitadas: `lower()` só converte ASCII, por isso a unicidade de nomes (RN04) é comparada em
+Python com `str.casefold()` (ver "Dívidas registradas"). O ORM mantém aberta a troca de banco sem reescrever consultas.
 
 ## ADR-03 — Docker Compose como forma padrão de execução
 
@@ -160,5 +160,5 @@ correção nesta branch.
 | Item | Efeito | Correção sugerida |
 |---|---|---|
 | ~~Testes sem isolamento de banco (ADR-10)~~ | Resolvido em 29/10/2026 por `tests/conftest.py` | — |
-| `lower()` do SQLite só trata ASCII (ADR-02) | `"ALIMENTAÇÃO"` é aceita como categoria diferente de `"Alimentação"`, violando RN04 | Comparar com `str.casefold()` em Python ou guardar coluna de nome normalizado |
+| ~~`lower()` do SQLite só trata ASCII (ADR-02)~~ | Com `"MANUTENÇÃO"` gravada, `"Manutenção"` era aceita como nova, violando RN04. Resolvido em 01/11/2026: comparação com `str.casefold()` e teste de borda | — |
 | `main` ainda no commit inicial | Versão estável não reflete o projeto entregue | PR `develop` → `main` ao fechar a entrega |

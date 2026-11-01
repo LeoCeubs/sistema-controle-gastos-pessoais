@@ -102,8 +102,9 @@ verificou".
 ao rodá-la num banco limpo, durante a revisão desta documentação, três dos quatro testes falharam:
 o `TestClient` sem bloco `with` não executa a inicialização do banco, e os testes só passavam porque
 o banco já existia de execuções anteriores. Na mesma revisão apareceu um caso de borda que nenhum
-teste cobria: o `lower()` do SQLite não converte letras acentuadas, então `"ALIMENTAÇÃO"` é aceita
-como categoria nova, contra a RN04. Lição: "100% de passagem" vale tanto quanto o ambiente em que
+teste cobria: o `lower()` do SQLite não converte letras acentuadas maiúsculas, então, com
+`"MANUTENÇÃO"` já gravada, `"Manutenção"` era aceita como categoria nova, contra a RN04
+(corrigido depois, na Entrega 3). Lição: "100% de passagem" vale tanto quanto o ambiente em que
 foi medido, e casos de borda de idioma (acentos, `ç`) precisam estar no plano de testes de um
 sistema em português.
 
